@@ -1,42 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Globalization;
-using AppointmentPlanner.Models;
-using Microsoft.AspNetCore.Components;
+﻿using System.Globalization;
+using AppointmentPlanner.Shared.Models;
 
-namespace AppointmentPlanner.Data
+namespace AppointmentPlanner.Client.Services
 {
     public class AppointmentService
     {
         public AppointmentService()
         {
-            this.Activities = new Activity().GetActivityData();
-            this.StartDate = new DateTime(2020, 2, 5, 0, 0, 0, 0);
-            this.ActiveDoctors = new Doctor().GetDoctorsData().FirstOrDefault();
-            this.ActivePatients = new Patient().GetPatientsData().FirstOrDefault();
-            this.StartHours = new TextValueData().GetStartHours();
-            this.EndHours = new TextValueData().GetEndHours();
-            this.Views = new TextValueData().GetViews();
-            this.ColorCategory = new TextValueData().GetColorCategory();
-            this.BloodGroups = new TextValueData().GetBloodGroupData();
-            this.DayOfWeekList = new TextValueNumericData().GetDayOfWeekList();
-            this.TimeSlot = new TextValueNumericData().GetTimeSlot();
-            this.Hospitals = new Hospital().GetHospitalData();
-            this.Patients = new Patient().GetPatientsData();
-            this.Doctors = new Doctor().GetDoctorsData();
-            this.WaitingLists = new WaitingList().GetWaitingList();
-            this.Specializations = new Specialization().GetSpecializationData();
-            this.DutyTimings = new TextIdData().DutyTimingsData();
-            this.Experience = new TextIdData().ExperienceData();
-            this.NavigationMenu = new NavigationMenu().GetNavigationMenuItems();
-            this.CalendarSettings = new CalendarSetting { BookingColor = "Doctors", Calendar = new AppointmentPlanner.Models.Calendar { Start = "08:00", End = "21:00" }, CurrentView = "Week", Interval = 60, FirstDayOfWeek = 0 };
+            Activities = new Activity().GetActivityData();
+            StartDate = new DateTime(2020, 2, 5, 0, 0, 0, 0);
+            ActiveDoctors = new Doctor().GetDoctorsData().FirstOrDefault();
+            ActivePatients = new Patient().GetPatientsData().FirstOrDefault();
+            StartHours = new TextValueData().GetStartHours();
+            EndHours = new TextValueData().GetEndHours();
+            Views = new TextValueData().GetViews();
+            ColorCategory = new TextValueData().GetColorCategory();
+            BloodGroups = new TextValueData().GetBloodGroupData();
+            DayOfWeekList = new TextValueNumericData().GetDayOfWeekList();
+            TimeSlot = new TextValueNumericData().GetTimeSlot();
+            Hospitals = new Hospital().GetHospitalData();
+            Patients = new Patient().GetPatientsData();
+            Doctors = new Doctor().GetDoctorsData();
+            WaitingLists = new WaitingList().GetWaitingList();
+            Specializations = new Specialization().GetSpecializationData();
+            DutyTimings = new TextIdData().DutyTimingsData();
+            Experience = new TextIdData().ExperienceData();
+            NavigationMenu = new NavigationMenu().GetNavigationMenuItems();
+            CalendarSettings = new CalendarSetting { BookingColor = "Doctors", Calendar = new AppointmentPlanner.Shared.Models.Calendar { Start = "08:00", End = "21:00" }, CurrentView = "Week", Interval = 60, FirstDayOfWeek = 0 };
         }
         public DateTime StartDate { get; set; }
         public Doctor ActiveDoctors { get; set; }
 
         public Patient ActivePatients { get; set; }
-        public List<TextValueData> StartHours { get; set; } 
+        public List<TextValueData> StartHours { get; set; }
         public List<TextValueData> EndHours { get; set; }
         public List<TextValueData> Views { get; set; }
         public List<TextValueData> ColorCategory { get; set; }
@@ -56,7 +52,7 @@ namespace AppointmentPlanner.Data
         public bool ShowDeleteMsg { get; set; }
 
         public DateTime GetWeekFirstDate(DateTime date)
-        { 
+        {
             return date.AddDays(DayOfWeek.Monday - date.DayOfWeek);
         }
 
@@ -67,19 +63,23 @@ namespace AppointmentPlanner.Data
 
         public string TimeSince(DateTime activityTime)
         {
-            if(Math.Round((DateTime.Now - activityTime).Days / (365.25 / 12)) > 0)
+            if (Math.Round((DateTime.Now - activityTime).Days / (365.25 / 12)) > 0)
             {
                 return Math.Round((DateTime.Now - activityTime).Days / (365.25 / 12)).ToString() + " months ago";
-            } else if(Math.Round((DateTime.Now - activityTime).TotalDays) > 0)
+            }
+            else if (Math.Round((DateTime.Now - activityTime).TotalDays) > 0)
             {
                 return Math.Round((DateTime.Now - activityTime).TotalDays).ToString() + " days ago";
-            } else if(Math.Round((DateTime.Now - activityTime).TotalHours) > 0)
+            }
+            else if (Math.Round((DateTime.Now - activityTime).TotalHours) > 0)
             {
                 return Math.Round((DateTime.Now - activityTime).TotalHours).ToString() + " hours ago";
-            } else if (Math.Round((DateTime.Now - activityTime).TotalMinutes) > 0)
+            }
+            else if (Math.Round((DateTime.Now - activityTime).TotalMinutes) > 0)
             {
                 return Math.Round((DateTime.Now - activityTime).TotalMinutes).ToString() + " mins ago";
-            } else if (Math.Round((DateTime.Now - activityTime).TotalSeconds) > 0)
+            }
+            else if (Math.Round((DateTime.Now - activityTime).TotalSeconds) > 0)
             {
                 return Math.Round((DateTime.Now - activityTime).TotalSeconds).ToString() + " seconds ago";
             }
@@ -102,14 +102,14 @@ namespace AppointmentPlanner.Data
             {
                 var result = workDays.Where(item => item.Enable.Equals(true)).Select(item => item.Day.Substring(0, 3).ToUpper());
                 return string.Join(",", result).ToString();
-                
+
             }
             return string.Empty;
         }
 
         public List<Hospital> GetFilteredData(DateTime StartDate, DateTime EndDate)
         {
-            return this.Hospitals.Where(hospital => (hospital.StartTime >= StartDate && hospital.EndTime <= EndDate)).ToList();
+            return Hospitals.Where(hospital => hospital.StartTime >= StartDate && hospital.EndTime <= EndDate).ToList();
         }
 
         public ChartData GetChartData(List<Hospital> hospitals, DateTime startDate)
@@ -136,6 +136,6 @@ namespace AppointmentPlanner.Data
             return chartPoints;
         }
 
-        
-    } 
+
+    }
 }

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace AppointmentPlanner.Models
+namespace AppointmentPlanner.Shared.Models
 {
     public class Hospital
     {

@@ -1,8 +1,8 @@
-using AppointmentPlanner.Data;
-using AppointmentPlanner.Models;
+using AppointmentPlanner.Shared.Models;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Popups;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using AppointmentPlanner.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddSyncfusionBlazor();

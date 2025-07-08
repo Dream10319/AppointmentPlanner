@@ -1,11 +1,16 @@
 using AppointmentPlanner.Client;
 using AppointmentPlanner.Components;
-using AppointmentPlanner.Data;
-using AppointmentPlanner.Models;
+using AppointmentPlanner.Shared.Models;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Popups;
+using Microsoft.EntityFrameworkCore;
+using AppointmentPlanner.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//// Configure DbContext with PostgreSQL
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
