@@ -1,0 +1,56 @@
+﻿@page "/login"
+@inject NavigationManager NavigationManager
+@inject HttpClient _http
+@inject ILocalStorageService _localStorage
+@inject AuthService AuthService
+
+<PageTitle>Log in</PageTitle>
+
+<h1>Log in</h1>
+<div class="row">
+    <div class="col-lg-6">
+        <section>
+            <StatusMessage Message="@errorMessage" />
+            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="login">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="loginModel.Email" id="loginModel.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <label for="loginModel.Email" class="form-label">Email</label>
+                    <ValidationMessage For="() => loginModel.Email" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="loginModel.Password" id="loginModel.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <label for="Input.Password" class="form-label">Password</label>
+                    <ValidationMessage For="() => loginModel.Password" class="text-danger" />
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+                <div>
+                    <p>
+                        <a href="Account/ForgotPassword">Forgot your password?</a>
+                    </p>
+                    <p>
+                        <a href="/register">Register as a new user</a>
+                    </p>
+                </div>
+            </EditForm>
+        </section>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string? errorMessage;
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        var result = await AuthService.Login(loginModel.Email, loginModel.Password);
+        if (result)
+            NavigationManager.NavigateTo("/");
+        else
+            errorMessage = "Invalid login.";
+    }
+}

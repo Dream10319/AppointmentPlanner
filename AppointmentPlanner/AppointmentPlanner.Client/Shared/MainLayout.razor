@@ -5,6 +5,7 @@
 @using AppointmentPlanner.Shared.Models;
 @using Microsoft.JSInterop;
 @inject IJSRuntime JSRuntime;
+@inject NavigationManager NavigationManager
 
 <div class="sb-content-overlay @(hide)">
     <div class="sb-loading">
@@ -29,7 +30,7 @@
             <AppBarSpacer></AppBarSpacer>
             <div class='logout-container'>
                 <div class="logout-icon-container"><span class="icon-logout logout-image"></span></div>
-                <span class='logout-name'>Logout</span>
+                <span class='logout-name' @onclick="Login">Logout</span>
             </div>
             <div class="sb-header-item sb-table-cell sb-download-wrapper">
                 <a href="https://github.com/syncfusion/ej2-showcase-blazor-appointment-planner" target="_blank">
@@ -162,5 +163,10 @@
     private void showSideBar()
     {
         open = true;
+    }
+
+    void Login()
+    {
+        NavigationManager.NavigateTo("login");
     }
 }

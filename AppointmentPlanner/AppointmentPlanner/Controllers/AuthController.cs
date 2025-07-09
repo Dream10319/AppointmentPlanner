@@ -1,4 +1,5 @@
 ﻿using AppointmentPlanner.Data;
+using AppointmentPlanner.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -68,16 +69,4 @@ public class AuthController : ControllerBase
 
         return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
     }
-}
-
-public class RegisterModel
-{
-    public string Email { get; set; }
-    public string Password { get; set; }
-    public string Role { get; set; } // "Admin", "Professional", "Client"
-}
-public class LoginModel
-{
-    public string Email { get; set; }
-    public string Password { get; set; }
 }
