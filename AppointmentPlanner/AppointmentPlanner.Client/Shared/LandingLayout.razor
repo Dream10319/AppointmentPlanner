@@ -1,0 +1,26 @@
+@inherits LayoutComponentBase
+
+<div class="landing-layout">
+    @Body
+</div>
+
+<style>
+    .landing-layout {
+        min-height: 100vh;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background: #f8f9fa;
+    }
+
+    /* Ensure no sidebar or navigation elements are shown */
+    .sidebar, .navigation, .main-layout, .nav-menu {
+        display: none !important;
+    }
+
+    /* Reset any inherited styles */
+    body {
+        margin: 0;
+        padding: 0;
+    }
+</style>

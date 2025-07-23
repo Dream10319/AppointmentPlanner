@@ -1,0 +1,445 @@
+@page "/profile"
+@using AppointmentPlanner.Client.Models
+@using AppointmentPlanner.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthenticationService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<div class="profile-container">
+    <div class="profile-header">
+        <h2>My Profile</h2>
+        <p>Manage your account settings and preferences</p>
+    </div>
+
+    @if (currentUser != null)
+    {
+        <div class="profile-content">
+            <div class="profile-tabs">
+                <button class="tab-button @(activeTab == "profile" ? "active" : "")" @onclick="@(() => activeTab = "profile")">
+                    Profile Information
+                </button>
+                <button class="tab-button @(activeTab == "password" ? "active" : "")" @onclick="@(() => activeTab = "password")">
+                    Change Password
+                </button>
+            </div>
+
+            @if (activeTab == "profile")
+            {
+                <div class="tab-content">
+                    <EditForm Model="@updateProfileModel" OnValidSubmit="@HandleUpdateProfile">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="firstName">First Name</label>
+                                <InputText id="firstName" @bind-Value="updateProfileModel.FirstName" class="form-control" />
+                                <ValidationMessage For="@(() => updateProfileModel.FirstName)" />
+                            </div>
+
+                            <div class="form-group">
+                                <label for="lastName">Last Name</label>
+                                <InputText id="lastName" @bind-Value="updateProfileModel.LastName" class="form-control" />
+                                <ValidationMessage For="@(() => updateProfileModel.LastName)" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <InputText id="email" Value="@currentUser.Email" class="form-control" readonly />
+                            <small class="form-text">Email address cannot be changed</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phoneNumber">Phone Number</label>
+                            <InputText id="phoneNumber" @bind-Value="updateProfileModel.PhoneNumber" class="form-control" />
+                            <ValidationMessage For="@(() => updateProfileModel.PhoneNumber)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profilePicture">Profile Picture URL</label>
+                            <InputText id="profilePicture" @bind-Value="updateProfileModel.ProfilePicture" class="form-control" placeholder="https://example.com/avatar.jpg" />
+                            <ValidationMessage For="@(() => updateProfileModel.ProfilePicture)" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(profileMessage))
+                        {
+                            <div class="alert @(profileSuccess ? "alert-success" : "alert-danger")">
+                                @profileMessage
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" disabled="@isUpdatingProfile">
+                                @if (isUpdatingProfile)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Updating...</span>
+                                }
+                                else
+                                {
+                                    <span>Update Profile</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            }
+
+            @if (activeTab == "password")
+            {
+                <div class="tab-content">
+                    <EditForm Model="@changePasswordModel" OnValidSubmit="@HandleChangePassword">
+                        <DataAnnotationsValidator />
+                        
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <InputText id="currentPassword" @bind-Value="changePasswordModel.CurrentPassword" type="password" class="form-control" />
+                            <ValidationMessage For="@(() => changePasswordModel.CurrentPassword)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <InputText id="newPassword" @bind-Value="changePasswordModel.NewPassword" type="password" class="form-control" />
+                            <ValidationMessage For="@(() => changePasswordModel.NewPassword)" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm New Password</label>
+                            <InputText id="confirmPassword" @bind-Value="changePasswordModel.ConfirmPassword" type="password" class="form-control" />
+                            <ValidationMessage For="@(() => changePasswordModel.ConfirmPassword)" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(passwordMessage))
+                        {
+                            <div class="alert @(passwordSuccess ? "alert-success" : "alert-danger")">
+                                @passwordMessage
+                            </div>
+                        }
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary" disabled="@isChangingPassword">
+                                @if (isChangingPassword)
+                                {
+                                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span>Changing Password...</span>
+                                }
+                                else
+                                {
+                                    <span>Change Password</span>
+                                }
+                            </button>
+                        </div>
+                    </EditForm>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="loading-container">
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <p>Loading profile...</p>
+        </div>
+    }
+</div>
+
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .profile-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .profile-header h2 {
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .profile-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    .profile-content {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .profile-tabs {
+        display: flex;
+        border-bottom: 1px solid #e1e5e9;
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 15px 20px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+
+    .tab-button:hover {
+        background: #f8f9fa;
+    }
+
+    .tab-button.active {
+        color: #667eea;
+        border-bottom: 2px solid #667eea;
+        background: #f8f9fa;
+    }
+
+    .tab-content {
+        padding: 30px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 20px;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
+
+    .form-text {
+        font-size: 12px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .alert-success {
+        background-color: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+    }
+
+    .loading-container {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .loading-container p {
+        margin-top: 20px;
+        color: #666;
+    }
+
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+        border: 0.25em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+        border-width: 0.125em;
+    }
+
+
+</style>
+
+@code {
+    private UserInfoDto? currentUser;
+    private UpdateProfileDto updateProfileModel = new();
+    private ChangePasswordDto changePasswordModel = new();
+    private string activeTab = "profile";
+    
+    private string profileMessage = string.Empty;
+    private bool profileSuccess = false;
+    private bool isUpdatingProfile = false;
+    
+    private string passwordMessage = string.Empty;
+    private bool passwordSuccess = false;
+    private bool isChangingPassword = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUserProfile();
+    }
+
+    private async Task LoadUserProfile()
+    {
+        try
+        {
+            currentUser = await AuthService.GetCurrentUserAsync();
+            
+            if (currentUser != null)
+            {
+                updateProfileModel.FirstName = currentUser.FirstName;
+                updateProfileModel.LastName = currentUser.LastName;
+                updateProfileModel.PhoneNumber = currentUser.PhoneNumber;
+                updateProfileModel.ProfilePicture = currentUser.ProfilePicture;
+            }
+        }
+        catch (Exception)
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+
+    private async Task HandleUpdateProfile()
+    {
+        try
+        {
+            isUpdatingProfile = true;
+            profileMessage = string.Empty;
+
+            var result = await AuthService.UpdateProfileAsync(updateProfileModel);
+
+            if (result.IsSuccess)
+            {
+                profileMessage = "Profile updated successfully!";
+                profileSuccess = true;
+                
+                // Reload user data
+                await LoadUserProfile();
+            }
+            else
+            {
+                profileMessage = result.Message;
+                profileSuccess = false;
+                if (result.Errors.Any())
+                {
+                    profileMessage += " " + string.Join(" ", result.Errors);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            profileMessage = "An unexpected error occurred. Please try again.";
+            profileSuccess = false;
+        }
+        finally
+        {
+            isUpdatingProfile = false;
+        }
+    }
+
+    private async Task HandleChangePassword()
+    {
+        try
+        {
+            isChangingPassword = true;
+            passwordMessage = string.Empty;
+
+            var result = await AuthService.ChangePasswordAsync(changePasswordModel);
+
+            if (result.IsSuccess)
+            {
+                passwordMessage = "Password changed successfully!";
+                passwordSuccess = true;
+                
+                // Clear the form
+                changePasswordModel = new();
+            }
+            else
+            {
+                passwordMessage = result.Message;
+                passwordSuccess = false;
+                if (result.Errors.Any())
+                {
+                    passwordMessage += " " + string.Join(" ", result.Errors);
+                }
+            }
+        }
+        catch (Exception)
+        {
+            passwordMessage = "An unexpected error occurred. Please try again.";
+            passwordSuccess = false;
+        }
+        finally
+        {
+            isChangingPassword = false;
+        }
+    }
+}

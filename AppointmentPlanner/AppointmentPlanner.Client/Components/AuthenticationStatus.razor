@@ -1,0 +1,241 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using AppointmentPlanner.Client.Models
+@using AppointmentPlanner.Client.Services
+@using AppointmentPlanner.Client.Components
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IAuthenticationService AuthService
+@implements IDisposable
+
+<CascadingAuthenticationState>
+    <AuthorizeView>
+        <Authorized>
+            <div class="auth-status-container">
+                <div class="user-info">
+                    @if (!string.IsNullOrEmpty(currentUser?.ProfilePicture))
+                    {
+                        <img src="@currentUser.ProfilePicture" alt="Profile" class="user-avatar" />
+                    }
+                    else
+                    {
+                        <div class="user-avatar-placeholder">
+                            @GetUserInitials()
+                        </div>
+                    }
+                    
+                    <div class="user-details">
+                        <div class="user-name">@currentUser?.FullName</div>
+                        <div class="user-role">@GetUserRole()</div>
+                    </div>
+                </div>
+                
+                <div class="auth-actions">
+                    <a href="/profile" class="btn btn-outline-sm">
+                        <i class="fas fa-user"></i>
+                        Profile
+                    </a>
+                    <LogoutButton CssClass="btn-outline-sm" IconClass="fas fa-sign-out-alt" />
+                </div>
+            </div>
+        </Authorized>
+        <NotAuthorized>
+            <div class="auth-status-container">
+                <div class="auth-actions">
+                    <a href="/login" class="btn btn-primary-sm">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </a>
+                    <a href="/register" class="btn btn-outline-sm">
+                        <i class="fas fa-user-plus"></i>
+                        Sign Up
+                    </a>
+                </div>
+            </div>
+        </NotAuthorized>
+    </AuthorizeView>
+</CascadingAuthenticationState>
+
+<style>
+    .auth-status-container {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 10px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #e1e5e9;
+    }
+
+    .user-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .user-details {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .user-role {
+        font-size: 12px;
+        color: #666;
+        text-transform: capitalize;
+    }
+
+    .auth-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary-sm {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary-sm:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-outline-sm {
+        background: transparent;
+        color: #667eea;
+        border: 1px solid #667eea;
+    }
+
+    .btn-outline-sm:hover {
+        background: #667eea;
+        color: white;
+    }
+
+
+
+        .user-info {
+            order: 2;
+        }
+
+        .auth-actions {
+            order: 1;
+        }
+
+        .user-details {
+            text-align: center;
+        }
+    }
+</style>
+
+@code {
+    private UserInfoDto? currentUser;
+    private AuthenticationState? authState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Subscribe to authentication state changes
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        
+        // Load initial state
+        await LoadAuthenticationState();
+    }
+
+    private async Task LoadAuthenticationState()
+    {
+        try
+        {
+            authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            
+            if (authState.User.Identity?.IsAuthenticated == true)
+            {
+                currentUser = await AuthService.GetCurrentUserAsync();
+            }
+            else
+            {
+                currentUser = null;
+            }
+            
+            StateHasChanged();
+        }
+        catch (Exception)
+        {
+            currentUser = null;
+            StateHasChanged();
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(Task<AuthenticationState> task)
+    {
+        await LoadAuthenticationState();
+    }
+
+    private string GetUserInitials()
+    {
+        if (currentUser == null) return "U";
+        
+        var firstInitial = !string.IsNullOrEmpty(currentUser.FirstName) ? currentUser.FirstName[0].ToString().ToUpper() : "";
+        var lastInitial = !string.IsNullOrEmpty(currentUser.LastName) ? currentUser.LastName[0].ToString().ToUpper() : "";
+        
+        return firstInitial + lastInitial;
+    }
+
+    private string GetUserRole()
+    {
+        if (authState?.User == null) return "";
+        
+        var roles = authState.User.Claims
+            .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+            .Select(c => c.Value)
+            .ToList();
+
+        if (roles.Contains(UserRoles.Admin))
+            return "Administrator";
+        else if (roles.Contains(UserRoles.Professional))
+            return "Healthcare Professional";
+        else if (roles.Contains(UserRoles.Client))
+            return "Patient";
+        
+        return "User";
+    }
+
+    public void Dispose()
+    {
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
@@ -9,9 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.6" />
 		<PackageReference Include="Syncfusion.Blazor.Buttons" Version="26.1.35" />
 		<PackageReference Include="Syncfusion.Blazor.Charts" Version="26.1.35" />
 		<PackageReference Include="Syncfusion.Blazor.Grid" Version="26.1.35" />
@@ -19,12 +20,7 @@
 		<PackageReference Include="Syncfusion.Blazor.Notifications" Version="26.1.35" />
 		<PackageReference Include="Syncfusion.Blazor.Schedule" Version="26.1.35" />
 		<PackageReference Include="Syncfusion.Blazor.Themes" Version="26.1.35" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.12.1" />
 		<PackageReference Include="System.Text.Json" Version="9.0.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\AppointmentPlanner.Shared\AppointmentPlanner.Shared.csproj" />
   </ItemGroup>
 
 </Project>

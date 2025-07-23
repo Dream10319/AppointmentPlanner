@@ -1,0 +1,246 @@
+@page "/"
+@page "/home"
+@layout LandingLayout
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<div class="welcome-container">
+    <div class="welcome-content">
+        <div class="welcome-header">
+            <h1>Welcome to Appointment Planner</h1>
+            <p class="lead">Your comprehensive healthcare appointment management system</p>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Easy Scheduling</h3>
+                <p>Book and manage appointments with healthcare professionals effortlessly</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Professional Network</h3>
+                <p>Connect with qualified doctors and healthcare specialists</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Health Tracking</h3>
+                <p>Monitor your health journey with comprehensive reporting</p>
+            </div>
+        </div>
+        
+        <div class="cta-section">
+            @if (isAuthenticated)
+            {
+                <h2>Welcome Back!</h2>
+                <p>You're already signed in. Ready to manage your appointments?</p>
+                <div class="cta-buttons">
+                    <a href="/dashboard" class="btn btn-primary btn-lg">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Go to Dashboard
+                    </a>
+                    <a href="/schedule" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-calendar-alt"></i>
+                        View Schedule
+                    </a>
+                </div>
+            }
+            else
+            {
+                <h2>Get Started Today</h2>
+                <p>Join thousands of users who trust Appointment Planner for their healthcare needs</p>
+                <div class="cta-buttons">
+                    <a href="/register" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus"></i>
+                        Sign Up Now
+                    </a>
+                    <a href="/login" class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Sign In
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .welcome-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+
+    .welcome-content {
+        max-width: 1200px;
+        width: 100%;
+        text-align: center;
+        color: white;
+    }
+
+    .welcome-header h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .welcome-header .lead {
+        font-size: 1.5rem;
+        margin-bottom: 3rem;
+        opacity: 0.9;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 4rem 0;
+    }
+
+    .feature-card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #ffd700;
+    }
+
+    .feature-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .feature-card p {
+        opacity: 0.9;
+        line-height: 1.6;
+    }
+
+    .cta-section {
+        margin-top: 4rem;
+    }
+
+    .cta-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .cta-section p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+
+    .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-lg {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        justify-content: center;
+    }
+
+    .btn-primary {
+        background: #28a745;
+        border: 2px solid #28a745;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #218838;
+        border-color: #218838;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .btn-outline-primary {
+        background: transparent;
+        border: 2px solid white;
+        color: white;
+    }
+
+    .btn-outline-primary:hover {
+        background: white;
+        color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);
+    }
+
+    @@media (max-width: 768px) {
+        .welcome-header h1 {
+            font-size: 2.5rem;
+        }
+
+        .welcome-header .lead {
+            font-size: 1.2rem;
+        }
+
+        .features-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .cta-section h2 {
+            font-size: 2rem;
+        }
+
+        .cta-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn-lg {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Check if user is already authenticated
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity?.IsAuthenticated == true;
+    }
+}

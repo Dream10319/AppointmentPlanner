@@ -1,9 +1,8 @@
 ﻿@page "/doctors/doctorsdetails/{Id:int}"
 
-@using AppointmentPlanner.Client.Services;
-@using AppointmentPlanner.Shared.Models;
+@using AppointmentPlanner.Data;
+@using AppointmentPlanner.Models;
 @using Microsoft.AspNetCore.Components.Forms;
-    using AppointmentPlanner.Client.Services;
 @inject SfDialogService DialogService
 @inject NavigationManager UriHelper
 @implements IDisposable;

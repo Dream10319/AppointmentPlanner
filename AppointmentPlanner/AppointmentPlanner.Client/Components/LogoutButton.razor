@@ -1,0 +1,127 @@
+@using AppointmentPlanner.Client.Services
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+
+<button class="logout-button @CssClass" @onclick="HandleLogout" disabled="@isLoggingOut">
+    @if (isLoggingOut)
+    {
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        <span>Signing out...</span>
+    }
+    else
+    {
+        @if (!string.IsNullOrEmpty(IconClass))
+        {
+            <i class="@IconClass"></i>
+        }
+        <span>@Text</span>
+    }
+</button>
+
+<style>
+    .logout-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #dc3545;
+        color: white;
+    }
+
+    .logout-button:hover:not(:disabled) {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    .logout-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .logout-button.btn-outline {
+        background: transparent;
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .logout-button.btn-outline:hover:not(:disabled) {
+        background: #dc3545;
+        color: white;
+    }
+
+    .logout-button.btn-link {
+        background: transparent;
+        color: #dc3545;
+        border: none;
+        text-decoration: none;
+        padding: 4px 8px;
+    }
+
+    .logout-button.btn-link:hover:not(:disabled) {
+        text-decoration: underline;
+        transform: none;
+    }
+
+    .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        border: 0.125em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
+    }
+
+    .spinner-border-sm {
+        width: 0.875rem;
+        height: 0.875rem;
+        border-width: 0.125em;
+    }
+
+    @@keyframes spinner-border {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Sign Out";
+    [Parameter] public string CssClass { get; set; } = "";
+    [Parameter] public string IconClass { get; set; } = "";
+    [Parameter] public EventCallback OnLogoutCompleted { get; set; }
+
+    private bool isLoggingOut = false;
+
+    private async Task HandleLogout()
+    {
+        try
+        {
+            isLoggingOut = true;
+            
+            await AuthService.LogoutAsync();
+            
+            // Notify parent component if callback is provided
+            if (OnLogoutCompleted.HasDelegate)
+            {
+                await OnLogoutCompleted.InvokeAsync();
+            }
+            
+            // Redirect to login page
+            Navigation.NavigateTo("/login");
+        }
+        catch (Exception)
+        {
+            // Handle error silently or show notification
+        }
+        finally
+        {
+            isLoggingOut = false;
+        }
+    }
+}

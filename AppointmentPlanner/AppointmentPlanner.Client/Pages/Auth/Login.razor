@@ -1,56 +1,309 @@
-﻿@page "/login"
-@inject NavigationManager NavigationManager
-@inject HttpClient _http
-@inject ILocalStorageService _localStorage
-@inject AuthService AuthService
+@page "/login"
+@layout AuthLayout
+@using AppointmentPlanner.Client.Models
+@using AppointmentPlanner.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using System.ComponentModel.DataAnnotations
+@inject IAuthenticationService AuthService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthStateProvider
 
-<PageTitle>Log in</PageTitle>
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Sign In</h2>
+            <p>Welcome back to Appointment Planner</p>
+        </div>
 
-<h1>Log in</h1>
-<div class="row">
-    <div class="col-lg-6">
-        <section>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="loginModel" OnValidSubmit="HandleLogin" FormName="login">
-                <DataAnnotationsValidator />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="form-floating mb-3">
-                    <InputText @bind-Value="loginModel.Email" id="loginModel.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
-                    <label for="loginModel.Email" class="form-label">Email</label>
-                    <ValidationMessage For="() => loginModel.Email" class="text-danger" />
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+            
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <InputText id="email" @bind-Value="loginModel.Email" class="form-control" placeholder="Enter your email" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <InputText id="password" @bind-Value="loginModel.Password" type="password" class="form-control" placeholder="Enter your password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-container">
+                    <InputCheckbox @bind-Value="loginModel.RememberMe" />
+                    <span class="checkmark"></span>
+                    Remember me
+                </label>
+            </div>
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger">
+                    @errorMessage
                 </div>
-                <div class="form-floating mb-3">
-                    <InputText type="password" @bind-Value="loginModel.Password" id="loginModel.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
-                    <label for="Input.Password" class="form-label">Password</label>
-                    <ValidationMessage For="() => loginModel.Password" class="text-danger" />
-                </div>
-                <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-                </div>
-                <div>
-                    <p>
-                        <a href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                    <p>
-                        <a href="/register">Register as a new user</a>
-                    </p>
-                </div>
-            </EditForm>
-        </section>
+            }
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        <span>Signing in...</span>
+                    }
+                    else
+                    {
+                        <span>Sign In</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+
+        <div class="login-footer">
+            <p>
+                <a href="/forgot-password">Forgot your password?</a>
+            </p>
+            <p>
+                Don't have an account? <a href="/register">Sign up here</a>
+            </p>
+            <p>
+                <button type="button" class="btn btn-link" @onclick="ClearSession">Clear Session</button>
+            </p>
+        </div>
     </div>
 </div>
 
+<style>
+    .login-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 20px;
+    }
+
+    .login-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .login-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .login-header h2 {
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .login-header p {
+        color: #666;
+        margin: 0;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e1e5e9;
+        border-radius: 6px;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .checkbox-container {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-block {
+        width: 100%;
+    }
+
+    .alert {
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+    }
+
+    .alert-danger {
+        background-color: #f8d7da;
+        border: 1px solid #f5c6cb;
+        color: #721c24;
+    }
+
+    .login-footer {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .login-footer p {
+        margin: 10px 0;
+    }
+
+    .login-footer a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .login-footer a:hover {
+        text-decoration: underline;
+    }
+
+    .spinner-border {
+        width: 1rem;
+        height: 1rem;
+        border: 0.125em solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: spinner-border 0.75s linear infinite;
+    }
+
+    .spinner-border-sm {
+        width: 0.875rem;
+        height: 0.875rem;
+        border-width: 0.125em;
+    }
+
+    @@keyframes spinner-border {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
 @code {
-    private LoginModel loginModel = new();
-    private string? errorMessage;
+    private LoginDto loginModel = new();
+    private string errorMessage = string.Empty;
     private bool isLoading = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Don't auto-redirect - let users access login page manually
+        // This prevents the automatic redirect issue
+    }
+
+    private async Task ClearSession()
+    {
+        try
+        {
+            await AuthService.LogoutAsync();
+            errorMessage = "Session cleared. You can now log in.";
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error clearing session: {ex.Message}";
+        }
+    }
 
     private async Task HandleLogin()
     {
-        var result = await AuthService.Login(loginModel.Email, loginModel.Password);
-        if (result)
-            NavigationManager.NavigateTo("/");
-        else
-            errorMessage = "Invalid login.";
+        try
+        {
+            isLoading = true;
+            errorMessage = string.Empty;
+
+            var result = await AuthService.LoginAsync(loginModel);
+
+            if (result.IsSuccess)
+            {
+                // Get user role and redirect accordingly
+                var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+                var userRoles = authState.User.Claims
+                    .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+                    .Select(c => c.Value)
+                    .ToList();
+
+                // Redirect based on role
+                if (userRoles.Contains(UserRoles.Admin))
+                {
+                    Navigation.NavigateTo("/admin");
+                }
+                else if (userRoles.Contains(UserRoles.Professional))
+                {
+                    Navigation.NavigateTo("/professional");
+                }
+                else
+                {
+                    Navigation.NavigateTo("/");
+                }
+            }
+            else
+            {
+                errorMessage = result.Message;
+                if (result.Errors.Any())
+                {
+                    errorMessage += " " + string.Join(" ", result.Errors);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

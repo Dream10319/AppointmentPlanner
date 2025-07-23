@@ -1,21 +1,29 @@
-global using Blazored.LocalStorage;
-global using Microsoft.AspNetCore.Components.Authorization;
+using AppointmentPlanner.Data;
+using AppointmentPlanner.Models;
 using AppointmentPlanner.Client.Services;
-using AppointmentPlanner.Shared.Models;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Syncfusion.Blazor;
 using Syncfusion.Blazor.Popups;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Add Syncfusion services
 builder.Services.AddSyncfusionBlazor();
 builder.Services.AddScoped<SfDialogService>();
+
+// Add authentication services
+builder.Services.AddOptions();
+builder.Services.AddAuthorizationCore();
+builder.Services.AddScoped<ILocalStorageService, LocalStorageService>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthStateProvider>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
+
+// Add HTTP client
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+
+// Add application services
 builder.Services.AddSingleton<AppointmentService, AppointmentService>();
 builder.Services.AddSingleton<Appointment, Appointment>();
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
-builder.Services.AddScoped<JwtAuthenticationStateProvider>();
-builder.Services.AddAuthorizationCore();
-builder.Services.AddBlazoredLocalStorage();
 
 await builder.Build().RunAsync();

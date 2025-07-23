@@ -1,9 +1,10 @@
-﻿@page "/"
-@page "/dashboard"
+﻿@page "/dashboard"
+@attribute [Authorize]
 
-@using AppointmentPlanner.Client.Services;
-@using AppointmentPlanner.Shared.Models;
+@using AppointmentPlanner.Data;
+@using AppointmentPlanner.Models;
 @using System;
+@using Microsoft.AspNetCore.Authorization;
 
 @if(isDataLoaded){
 <div id="dashboard" class="planner-dashboard">
